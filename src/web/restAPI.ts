@@ -1,28 +1,24 @@
 import express from "express";
 import bodyParser from "body-parser";
+import Dokus from "./docus";
 
-class App {
-
+class RestApi {
     public express: express.Application;
-
     constructor() {
         this.express = express();
         this.middleware();
         this.routes();
-    }
 
-    // Configure Express middleware.
+    }
     private middleware(): void {
         this.express.use(bodyParser.json());
         this.express.use(bodyParser.urlencoded({ extended: false }));
     }
-
     private routes(): void {
-        
-        this.express.use("/", (req,res,next) => {
-            res.send("Typescript App works!!!");
+
+        this.express.get("/files", (req, res, next) => {
+            res.json(Dokus.getDokus());
         });
     }
 }
-
-export default new App().express;
+export default new RestApi().express;

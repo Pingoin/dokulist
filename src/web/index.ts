@@ -1,16 +1,19 @@
-import App from "./app";
-import http from "http";
-
+import express from "express";
+import bodyParser from "body-parser";
+import path from "path";
+import RestAPI from "./restAPI";
+const app = express();
 const port = 3070;
 
-  App.set("port", port);
-  const server = http.createServer(App);
-  server.listen(port);
-  
-server.on("listening", function(): void {
-    const addr = server.address();
-    const bind = (typeof addr === "string") ? `pipe ${addr}` : `port ${addr.port}`;
-    console.log(`Listening on ${bind}`);
- });
 
-module.exports = App;
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: false }));
+app.set("port", process.env.port || port);
+app.use(express.static(path.join(__dirname,"../public")));
+
+
+app.use("/api", RestAPI);
+
+app.listen(port, () => {
+  console.log(`Server running on port: ${port}`);
+});
