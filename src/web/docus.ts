@@ -21,7 +21,7 @@ class Dokus {
                 if (/[(.mp4)(.mkv)]$/i.test(file)) {
                     let tmpDoku: Doku = new Doku(file, dir.toString(), new Date(fs.statSync(filePath).birthtime));
                     if (fs.existsSync(Path.join(dir.toString(), tmpDoku.title + ".json"))) {
-                        tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
+                        //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
                     } else if (fs.existsSync(Path.join(dir.toString(), tmpDoku.title + ".txt"))) {
                         console.log();
                         let regExp: RegExpExecArray;
