@@ -6,12 +6,12 @@ export class Doku{
     public ageRating=0;
     public year=0;
     public source="";
+    public extension="";
     public title: string;
     constructor(filename: string, path: string,date: Date){
         this.filename=filename;
-        filename=filename.replace(".mkv","");
-        filename=filename.replace(".mp4","");
-        this.title=filename;
+        this.title=filename.replace(".mkv","").replace(".mp4","");
+        this.extension=filename.replace(this.title,"");
         this.path=path;
         this.date=date;
     }

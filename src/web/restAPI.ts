@@ -1,6 +1,6 @@
 import express from "express";
 import bodyParser from "body-parser";
-import Dokus from "./docus";
+import {Dokus} from "./docus";
 
 class RestApi {
     public express: express.Application;
@@ -8,7 +8,6 @@ class RestApi {
         this.express = express();
         this.middleware();
         this.routes();
-
     }
     private middleware(): void {
         this.express.use(bodyParser.json());
@@ -17,7 +16,9 @@ class RestApi {
     private routes(): void {
 
         this.express.get("/files", (req, res, next) => {
-            res.json(Dokus.getDokus());
+            Dokus.getInstance().getDokus().then((resolve=>{
+                res.json(resolve);
+            }));
         });
     }
 }
