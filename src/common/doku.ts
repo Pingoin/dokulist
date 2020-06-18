@@ -1,4 +1,5 @@
 export class Doku{
+    public index=0;
     public filename: string;
     public path: string;
     public date: Date;
@@ -22,4 +23,25 @@ export class Doku{
 
         return tmpDoku;
     }
+    static fromInterface(idoc:iDoku):Doku{
+        const tmpDoku=new Doku(idoc.title+idoc.extension,idoc.path,new Date(idoc.date));
+
+        tmpDoku.index=idoc.index;
+        tmpDoku.description=idoc.description;
+        tmpDoku.ageRating=idoc.ageRating;
+        tmpDoku.year=idoc.year;
+        tmpDoku.source=idoc.source;
+        return tmpDoku;
+    }
 }
+export interface iDoku{
+    index:number,
+    path: string,
+    date: number,
+    description:string,
+    ageRating:number,
+    year:number,
+    source:string,
+    extension:string,
+    title: string,
+  }

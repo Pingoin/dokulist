@@ -1,69 +1,74 @@
-import { Doku } from "../common/doku";
-import fs, { PathLike, OpenDirOptions } from "fs";
+import { Doku, iDoku  } from "../common/doku";
+import fs, { PathLike} from "fs";
 import Path from "path";
 import sqlite3 from "sqlite3";
-import { open, ISqlite, IMigrate } from "sqlite";
-import { Database } from "sqlite";
+import { open} from "sqlite";
+import { Database} from "sqlite";
+
+/**
+ *
+ *
+ * @export
+ * @class Dokus
+ */
 export class Dokus {
     private static instance: Dokus;
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     constructor() {
         sqlite3.verbose();
+        
+    }
+
+
+    /**
+     *
+     *
+     * @returns {Promise<Doku[]>}
+     * @memberof Dokus
+     */
+    public async getDokus(): Promise<Doku[]> {
+        const promise = new Promise<Doku[]>((resolve) => {
+            const tempDokus: Array<Doku> = [];
+            this.dokulist.all<iDoku[]>("SELECT * FROM dokus").then((result) => {
+                result.forEach((row) => {
+                    tempDokus.push(Doku.fromInterface(row));
+                });
+                resolve(tempDokus);
+            }).catch((err) => {
+                console.log(err);
+            });
+
+        });
+
+        return promise;
+    }
+    public init(dir: PathLike ):void{
         open<sqlite3.Database, sqlite3.Statement>({
             filename: ":memory:",
             driver: sqlite3.Database
         }).then((db) => {
             this.dokulist = db;
             this.dokulist.exec(`CREATE TABLE IF NOT EXISTS "dokus" (
-                "title"	TEXT NOT NULL,
-                "path"	TEXT NOT NULL,
-                "year"	INTEGER,
-                "ageRating"	INTEGER,
-                "descrition"	TEXT,
-                "source"	TEXT,
-                "extension"	TEXT,
-                PRIMARY KEY("title","path")
+                "index"	INTEGER,
+                "path" TEXT,
+                "date" INTEGER,
+                "description" TEXT,
+                "ageRating" INTEGER,
+                "year" ITEGER,
+                "source" TEXT,
+                "extension" TEXT,
+                "title" TEXT,
+                PRIMARY KEY("index" AUTOINCREMENT)
             );`);
+        }).catch((err) => {
+            console.log(err);
         }).then(() => {
-            this.dokulist.exec(
-                "INSERT INTO \"dokus\" (\"title\", \"path\", \"year\", \"ageRating\", \"descrition\", \"source\", \"extension\") VALUES (\""
-                + new Date().toISOString() + "\" , \"test\", 2020, 12, \"fdf\", \"dein Arsch\", \".mp3\");");
-        }).then(() => {
-            console.log("Datenbank");
-        }).catch((err)=>{
+            this.allFilesSync(dir);
+        }).catch((err) => {
             console.log(err);
         });
     }
-
-
-    public async getDokus(): Promise<Doku[]> {
-        const promise = new Promise<Doku[]>((resolve, reject) => {
-            this.allFilesSync("N:\\");
-            const tempDokus: Array<Doku> = [];
-            this.dokulist.all("SELECT * FROM dokus").then((result) => {
-                result.forEach((row)=>{
-                    //console.log(row);
-                    const tmpDoku:Doku=new Doku(row.title+row.extension,row.path,new Date());
-                    tempDokus.push(tmpDoku);
-                });
-                resolve(tempDokus);
-            }).catch((err) => {
-                console.log(err);
-            });
-            
-        });
-
-        return promise;
-    }
-    static getInstance(): Dokus {
-        if (!Dokus.instance) {
-            Dokus.instance = new Dokus();
-        }
-
-        return Dokus.instance;
-    }
-    private allFilesSync(dir: PathLike, fileList: Array<Doku> = []): Doku[] {
-
+    public allFilesSync(dir: PathLike, fileList: Array<Doku> = []): Doku[] {
         fs.readdirSync(dir).forEach(file => {
             const filePath = Path.join(dir.toString(), file);
             if (fs.statSync(filePath).isDirectory()) {
@@ -88,6 +93,7 @@ export class Dokus {
                             regExp = /Altersfreigabe: ab ([0-9]*)/.exec(description);
                             tmpDoku.ageRating = Number(regExp[1]);
                             description = description.replace(regExp[0], "");
+                            description = description.replace(/(",')/, "*");
                         } catch{
                             tmpDoku.ageRating = 0;
                         }
@@ -101,27 +107,20 @@ export class Dokus {
                 }
             }
         });
-
-        //homes.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
-        /*
-        fileList.sort((a: Doku, b: Doku) => {
-            if (a.path < b.path) return -1;
-            if (a.path > b.path) return 1;
-            if (a.filename < b.filename) return -1;
-            if (a.filename > b.filename) return 1;
-            return 0;
-        });*/
-
         return fileList;
     }
 
     private pushDoku(doku: Doku) {
         //console.log(doku);
-        this.dokulist.exec(
-            "INSERT INTO dokus (\"title\", \"path\", \"year\", \"ageRating\", \"descrition\", \"source\", \"extension\")"+ 
-            " VALUES (\"" + doku.title + "\" , \""+doku.path+"\", " + doku.year.toString() + ", " 
-            + doku.ageRating.toString() + ", \"" + doku.description + "\", \"" + doku.source + "\", \"" + doku.extension + "\");").catch((err)=>{
-                console.log(err);});
+        this.dokulist.run(
+            `INSERT INTO "main"."dokus" 
+            ("path", "date", "description", "ageRating", "year", "source", "extension", "title")
+            VALUES (?,?, ?, ?, ?, ?, ?, ?);`,
+            doku.path,doku.date.valueOf(),doku.description,doku.ageRating,doku.year,doku.source,doku.extension,doku.title
+            ).catch((err) => {
+                console.log(doku);
+                console.log(err);
+            });
     }
 
 }
