@@ -1,9 +1,9 @@
-import { Doku, iDoku  } from "../common/doku";
-import fs, { PathLike} from "fs";
+import { Doku, iDoku } from "../common/doku";
+import fs, { promises as fileSystem, PathLike } from "fs";
 import Path from "path";
 import sqlite3 from "sqlite3";
-import { open} from "sqlite";
-import { Database} from "sqlite";
+import { open } from "sqlite";
+import { Database } from "sqlite";
 
 /**
  *
@@ -16,7 +16,7 @@ export class Dokus {
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     constructor() {
         sqlite3.verbose();
-        
+
     }
 
 
@@ -29,7 +29,8 @@ export class Dokus {
     public async getDokus(): Promise<Doku[]> {
         const promise = new Promise<Doku[]>((resolve) => {
             const tempDokus: Array<Doku> = [];
-            this.dokulist.all<iDoku[]>("SELECT * FROM dokus").then((result) => {
+            this.dokulist.all<iDoku[]>(`SELECT * 
+            FROM dokus ORDER BY "date" DESC`).then((result) => {
                 result.forEach((row) => {
                     tempDokus.push(Doku.fromInterface(row));
                 });
@@ -42,7 +43,7 @@ export class Dokus {
 
         return promise;
     }
-    public init(dir: PathLike ):void{
+    public init(dir: PathLike): void {
         open<sqlite3.Database, sqlite3.Statement>({
             filename: ":memory:",
             driver: sqlite3.Database
@@ -68,59 +69,60 @@ export class Dokus {
             console.log(err);
         });
     }
-    public allFilesSync(dir: PathLike, fileList: Array<Doku> = []): Doku[] {
-        fs.readdirSync(dir).forEach(file => {
-            const filePath = Path.join(dir.toString(), file);
-            if (fs.statSync(filePath).isDirectory()) {
-                this.allFilesSync(filePath, fileList);
-            } else {
-                if (/[(.mp4)(.mkv)]$/i.test(file)) {
-                    const tmpDoku: Doku = new Doku(file, dir.toString(), new Date(fs.statSync(filePath).birthtime));
-                    if (fs.existsSync(Path.join(dir.toString(), tmpDoku.title + ".json"))) {
-                        //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
-                    } else if (fs.existsSync(Path.join(dir.toString(), tmpDoku.title + ".txt"))) {
-                        let regExp: RegExpExecArray;
-                        const data = fs.readFileSync(Path.join(dir.toString(), tmpDoku.title + ".txt"), "ucs2");
-                        const source: string = /Channel.*: (.*)/.exec(data)[1];
-                        let description: string = /Description : (.*)/.exec(data)[1];
-                        tmpDoku.source = source;
-                        const removeArray: string[] = [
-                            " Doku-Reihe, ",
-                            tmpDoku.title
-                        ];
-                        removeArray.forEach(element => description = description.replace(element, ""));
-                        try {
-                            regExp = /Altersfreigabe: ab ([0-9]*)/.exec(description);
-                            tmpDoku.ageRating = Number(regExp[1]);
-                            description = description.replace(regExp[0], "");
-                            description = description.replace(/(",')/, "*");
-                        } catch{
-                            tmpDoku.ageRating = 0;
+    public allFilesSync(dir: PathLike): void {
+        fileSystem.readdir(dir).then(
+            (files) => {
+                files.forEach(file => {
+                    const filePath = Path.join(dir.toString(), file);
+                    fileSystem.stat(filePath).then(
+                        (Filestat) => {
+                            if (Filestat.isDirectory()) {
+                                this.allFilesSync(filePath);
+                            } else {
+                                if (/[(.mp4)(.mkv)]$/i.test(file)) {this.pushDoku(filePath, file, Filestat);}
+                            }
                         }
-                        //console.log(tmpDoku.ageRating);
-
-                        tmpDoku.description = description;
-
-                    }
-                    this.pushDoku(tmpDoku);
-                    fileList.push(tmpDoku);
-                }
+                    ).catch((err)=>console.log(err));
+                });
             }
-        });
-        return fileList;
+        ).catch((err)=>console.log(err));
     }
 
-    private pushDoku(doku: Doku) {
-        //console.log(doku);
+
+    private pushDoku(dir: PathLike, file: string, Filestat: fs.Stats) {
+        const doku: Doku = new Doku(file, dir.toString(), new Date(Filestat.birthtime));
+        if (fs.existsSync(Path.join(dir.toString(), doku.title + ".json"))) {
+            //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
+        } else if (fs.existsSync(Path.join(dir.toString(), doku.title + ".txt"))) {
+            let regExp: RegExpExecArray;
+            const data = fs.readFileSync(Path.join(dir.toString(), doku.title + ".txt"), "ucs2");
+            const source: string = /Channel.*: (.*)/.exec(data)[1];
+            let description: string = /Description : (.*)/.exec(data)[1];
+            doku.source = source;
+            const removeArray: string[] = [
+                " Doku-Reihe, ",
+                doku.title
+            ];
+            removeArray.forEach(element => description = description.replace(element, ""));
+            try {
+                regExp = /Altersfreigabe: ab ([0-9]*)/.exec(description);
+                doku.ageRating = Number(regExp[1]);
+                description = description.replace(regExp[0], "");
+                description = description.replace(/(",')/, "*");
+            } catch{
+                doku.ageRating = 0;
+            }
+            doku.description = description;
+        }
         this.dokulist.run(
             `INSERT INTO "main"."dokus" 
             ("path", "date", "description", "ageRating", "year", "source", "extension", "title")
             VALUES (?,?, ?, ?, ?, ?, ?, ?);`,
-            doku.path,doku.date.valueOf(),doku.description,doku.ageRating,doku.year,doku.source,doku.extension,doku.title
-            ).catch((err) => {
-                console.log(doku);
-                console.log(err);
-            });
+            doku.path, doku.date.valueOf(), doku.description, doku.ageRating, doku.year, doku.source, doku.extension, doku.title
+        ).catch((err) => {
+            console.log(doku);
+            console.log(err);
+        });
     }
 
 }
