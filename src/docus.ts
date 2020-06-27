@@ -1,4 +1,4 @@
-import { Doku, iDoku } from "../common/doku";
+import { Doku, iDoku } from "./common/doku";
 import fs, { promises as fileSystem, PathLike } from "fs";
 import Path from "path";
 import sqlite3 from "sqlite3";

@@ -21,7 +21,7 @@ class RestApi {
         this.express.get("/files", (req, res) => {
             this.docuDB.getDokus().then((resolve=>{
                 res.json(resolve);
-            }));
+            })); 
         });
     }
 }

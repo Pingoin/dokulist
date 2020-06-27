@@ -1,8 +1,9 @@
 {
     "watch": [
-        "src"
+        "src",
+        "com"
     ],
-    "ext": "ts",
+    "ext": "ts,ejs",
     "ignore": [
         "**/*.test.ts",
         "**/*.spec.ts",
@@ -12,5 +13,5 @@
     "execMap": {
         "ts": "ts-node"
     },
-    "exec": "ts-node ./src/web/index.ts"
+    "exec": "npm-run-all build start"
 }
