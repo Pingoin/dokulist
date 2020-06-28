@@ -14,10 +14,10 @@ import { DokuResponse } from "./common/dokuResponse";
  * @class Dokus
  */
 export class Dokus {
-    private static instance: Dokus;
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     private dokuCount:number;
     constructor() {
+        this.dokuCount=0;
         sqlite3.verbose();
 
     }
@@ -55,21 +55,6 @@ export class Dokus {
 
         return promise;
     }
-    public async getDokuCount():Promise<number>{
-
-        interface Row {
-            count: number
-          }
-
-        const promise=new Promise<number>((resolve)=>{
-            this.dokulist.get<Row>("SELECT COUNT(*) AS count FROM dokus").then((result)=>{
-                console.log(result);
-                resolve(result.count);
-            });
-        });
-        return promise;
-    }
-
     
     public init(dir: PathLike): void {
         open<sqlite3.Database, sqlite3.Statement>({
@@ -119,6 +104,7 @@ export class Dokus {
 
     private pushDoku(dir: PathLike, file: string, Filestat: fs.Stats) {
         const doku: Doku = new Doku(file, dir.toString(), new Date(Filestat.birthtime));
+        this.dokuCount++;
         if (fs.existsSync(Path.join(dir.toString(), doku.title + ".json"))) {
             //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
         } else if (fs.existsSync(Path.join(dir.toString(), doku.title + ".txt"))) {

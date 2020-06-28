@@ -20,6 +20,9 @@ app.get( "/", ( req, res ) => {
 
 app.use("/api", RestApi);
 
+app.get("*", function (req, res) {
+  res.render( "index" );
+});
 app.listen(port, () => {
   console.log(`Server running on port: ${port}`);
 });
