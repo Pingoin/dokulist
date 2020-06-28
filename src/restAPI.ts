@@ -26,6 +26,12 @@ class RestApi {
             })); 
         });
 
+        this.express.get("/fileCount", (req, res) => {
+            this.docuDB.getDokuCount().then((resolve=>{
+                res.sendStatus(resolve);
+            })); 
+        });
+
         this.express.get("/templates/dokuTable",(req,res)=>{
             fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/dokuTable.ejs"))
                 .then((html)=>{

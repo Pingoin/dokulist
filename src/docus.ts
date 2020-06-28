@@ -4,6 +4,7 @@ import Path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { Database } from "sqlite";
+import { DokuResponse } from "./common/dokuResponse";
 
 
 /**
@@ -15,6 +16,7 @@ import { Database } from "sqlite";
 export class Dokus {
     private static instance: Dokus;
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
+    private dokuCount:number;
     constructor() {
         sqlite3.verbose();
 
@@ -27,13 +29,22 @@ export class Dokus {
      * @returns {Promise<Doku[]>}
      * @memberof Dokus
      */
-    public async getDokus(): Promise<Doku[]> {
-        const promise = new Promise<Doku[]>((resolve) => {
-            const tempDokus: Array<Doku> = [];
-            this.dokulist.all<iDoku[]>(`SELECT * 
-            FROM dokus ORDER BY "date" DESC`).then((result) => {
+    public async getDokus(count:number=25,page:number=0,order:string="date",desc:boolean=true): Promise<DokuResponse> {
+        const promise = new Promise<DokuResponse>((resolve) => {
+            const tempDokus: DokuResponse =new DokuResponse();
+            tempDokus.limit=count;
+            tempDokus.page=page;
+            tempDokus.count=this.dokuCount;
+            let qry= "SELECT * FROM dokus ORDER BY \""+order+"\"";
+            if (desc){
+                qry+=" DESC";
+            }else{
+                qry+=" ASC";
+            }
+            qry+=" LIMIT "+count.toString()+" OFFSET "+(page*count).toString();
+            this.dokulist.all<iDoku[]>(qry).then((result) => {
                 result.forEach((row) => {
-                    tempDokus.push(Doku.fromInterface(row));
+                    tempDokus.dokus.push(Doku.fromInterface(row));
                 });
                 resolve(tempDokus);
             }).catch((err) => {
@@ -44,6 +55,22 @@ export class Dokus {
 
         return promise;
     }
+    public async getDokuCount():Promise<number>{
+
+        interface Row {
+            count: number
+          }
+
+        const promise=new Promise<number>((resolve)=>{
+            this.dokulist.get<Row>("SELECT COUNT(*) AS count FROM dokus").then((result)=>{
+                console.log(result);
+                resolve(result.count);
+            });
+        });
+        return promise;
+    }
+
+    
     public init(dir: PathLike): void {
         open<sqlite3.Database, sqlite3.Statement>({
             filename: ":memory:",

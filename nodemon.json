@@ -3,7 +3,7 @@
         "src",
         "com"
     ],
-    "ext": "ts,ejs",
+    "ext": "ts,ejs,js",
     "ignore": [
         "**/*.test.ts",
         "**/*.spec.ts",
