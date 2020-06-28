@@ -1,6 +1,8 @@
 import express from "express";
 import bodyParser from "body-parser";
 import {Dokus} from "./docus";
+import { promises as fileSystem, PathLike } from "fs";
+import path from "path";
 
 class RestApi {
     public express: express.Application;
@@ -23,6 +25,13 @@ class RestApi {
                 res.json(resolve);
             })); 
         });
-    }
+
+        this.express.get("/templates/dokuTable",(req,res)=>{
+            fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/dokuTable.ejs"))
+                .then((html)=>{
+                    res.send(html);
+                });
+        });
+    } 
 }
 export default new RestApi().express;
