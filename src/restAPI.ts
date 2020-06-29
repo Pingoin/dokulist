@@ -21,8 +21,12 @@ class RestApi {
     private routes(): void {
 
         this.express.get("/files", (req, res) => {
-            console.log(req.query);
-            this.docuDB.getDokus().then((resolve=>{
+            console.log(req.query.page);
+            let page=0;
+            if (req.query.page){
+                page=parseInt(req.query.page.toString())-1;
+            }
+            this.docuDB.getDokus(25,page).then((resolve=>{
                 fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/dokuTable.ejs"))
                 .then((html)=>{
                     resolve.template=html.toString();
@@ -32,22 +36,6 @@ class RestApi {
                     res.send("Template nicht vorhanden: "+req.query.template);
                 });
             })); 
-        });
-
-        this.express.get("/templates",(req,res)=>{
-            let template;
-            if(req.query.template){
-                template=req.query.template;
-            }else{
-                template="dokuTable";
-            }
-            fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/"+template+".ejs"))
-                .then((html)=>{
-                    res.send(html);
-                }).catch((reject)=>{
-                    console.log(reject);
-                    res.send("Template nicht vorhanden: "+req.query.template);
-                });
         });
     } 
 }
