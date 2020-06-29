@@ -23,7 +23,14 @@ class RestApi {
         this.express.get("/files", (req, res) => {
             console.log(req.query);
             this.docuDB.getDokus().then((resolve=>{
-                res.json(resolve);
+                fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/dokuTable.ejs"))
+                .then((html)=>{
+                    resolve.template=html.toString();
+                    res.json(resolve);
+                }).catch((reject)=>{
+                    console.log(reject);
+                    res.send("Template nicht vorhanden: "+req.query.template);
+                });
             })); 
         });
 

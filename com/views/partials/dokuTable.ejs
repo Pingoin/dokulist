@@ -1,4 +1,4 @@
-<h3>Dokus <%=(dokus.page*dokus.limit+1) %> - <%=dokus.dokus.length %> von <%=dokus.count %></h3>
+<h3>Dokus <%=(page*limit+1) %> - <%=dokus.length %> von <%=count %></h3>
 
 <table class="table table-striped table-hover">
     <thead>
@@ -10,7 +10,7 @@
         </tr>
     </thead>
     <tbody>
-        <% dokus.dokus.forEach(function(doku, index) {%>
+        <% dokus.forEach(function(doku, index) {%>
         <tr>
             <td scope="row"><%=index+1 %></td>
             <th>

@@ -1,17 +1,16 @@
 parseURL();
 function fillDokuTable(page) {
-    axios.get("/api/templates", {
+    axios.get("/api/files", {
         params: {
-            template: "dokuTable"
+            page: page
         }
-    }).then(templateReq => (
-        axios.get("/api/files", {
-            params: {
-                page: page
-            }
-        }).then(respDokus => (
-            $("#app").html(ejs.render(templateReq.data, { dokus: respDokus.data }))
-        ))
+    }).then(respDokus => (
+        $("#app").html(ejs.render(respDokus.data.template, 
+            { 
+                dokus: respDokus.data.dokus, 
+                page:respDokus.data.page,
+                limit:respDokus.data.limit,
+                count:respDokus.data.count }))
     ));
 }
 
@@ -26,14 +25,14 @@ function parseURL() {
     if (url.length > 2) {
         switch (url[3]) {
             case "dokus":
-                fillDokuTable(parseInt(url[4].replace("page","")));
+                fillDokuTable(parseInt(url[4].replace("page", "")));
                 break;
             default:
                 fillDokuTable(1);
         }
-    }else{
-    fillDokuTable(1);
-}
-    
+    } else {
+        fillDokuTable(1);
+    }
+
 
 }
