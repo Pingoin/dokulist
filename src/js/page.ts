@@ -1,5 +1,13 @@
+declare let axios: typeof import("axios").default;
+declare let ejs: typeof import("ejs");
+
+function goToPage(page:string) {// eslint-disable-line
+    history.pushState({}, "title 1", page);
+    parseURL();
+}
+
 parseURL();
-function fillDokuTable(page) {
+function fillDokuTable(page:number) {
     axios.get("/api/files", {
         params: {
             page: page
@@ -14,14 +22,8 @@ function fillDokuTable(page) {
     ));
 }
 
-function goToPage(page) {
-    history.pushState({}, "title 1", page);
-    parseURL();
-
-}
-
 function parseURL() {
-    let url = window.location.href.split("/");
+    const url = window.location.href.split("/");
     if (url.length > 2) {
         switch (url[3]) {
             case "dokus":
@@ -33,6 +35,4 @@ function parseURL() {
     } else {
         fillDokuTable(1);
     }
-
-
 }

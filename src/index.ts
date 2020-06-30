@@ -9,8 +9,7 @@ app.set( "view engine", "ejs" );
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.set("port", process.env.port || port);
-app.use(express.static(path.join(__dirname,"../com/public")));
-app.use("/views",express.static(path.join(__dirname,"../com/views")));
+app.use("/js",express.static(path.join(__dirname,"js")));
 
 // define a route handler for the default home page
 app.get( "/", ( req, res ) => {
