@@ -23,7 +23,7 @@
     "build": "npm-run-all clean compile",
     "build:wp": "webpack",
     "start:dev": "nodemon",
-    "compile": "tsc",
+    "compile": "tsc --alwaysStrict true",
     "update": "ncu -u && npm install"
   },
   "dependencies": {

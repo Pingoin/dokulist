@@ -14,12 +14,12 @@ import { DokuResponse } from "./common/dokuResponse";
  * @class Dokus
  */
 export class Dokus {
+    
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     private dokuCount:number;
     constructor() {
         this.dokuCount=0;
         sqlite3.verbose();
-
     }
 
 

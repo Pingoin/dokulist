@@ -2,17 +2,20 @@ import express from "express";
 import bodyParser from "body-parser";
 import { Dokus } from "./docus";
 import { promises as fileSystem } from "fs";
+import dotenv from "dotenv";
 import path from "path";
 
 class RestApi {
     public express: express.Application;
     private docuDB: Dokus;
     constructor() {
+        dotenv.config();
         this.express = express();
         this.middleware();
         this.routes();
         this.docuDB = new Dokus();
-        this.docuDB.init("N:\\");
+        const dokuPath:string=process.env.DOKU_ROOT;
+        this.docuDB.init(dokuPath);
     }
     private middleware(): void {
         this.express.use(bodyParser.json());
