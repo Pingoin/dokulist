@@ -22,10 +22,9 @@ class RestApi {
         this.express.use(bodyParser.urlencoded({ extended: false }));
     }
     private routes(): void {
-
         this.express.get("/files", (req, res) => {
-            console.log(req.query.page);
             let page = 0;
+            this.docuDB.getDoku(5);
             if (req.query.page) {
                 page = parseInt(req.query.page.toString()) - 1;
             }
@@ -39,6 +38,12 @@ class RestApi {
                         res.send("Template nicht vorhanden: " + req.query.template);
                     });
             }));
+        });
+        this.express.get("/doku",(req,res)=>{
+            let ID:number;
+            if (req.query.ID) {
+                ID = parseInt(req.query.page.toString()) - 1;
+            }
         });
     }
 }

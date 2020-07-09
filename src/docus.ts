@@ -5,6 +5,7 @@ import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { Database } from "sqlite";
 import { DokuResponse } from "./common/dokuResponse";
+import dotenv from "dotenv";
 
 
 /**
@@ -17,7 +18,9 @@ export class Dokus {
     
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     private dokuCount:number;
+    private path:PathLike;
     constructor() {
+        dotenv.config();
         this.dokuCount=0;
         sqlite3.verbose();
     }
@@ -56,7 +59,21 @@ export class Dokus {
         return promise;
     }
     
+    public async getDoku(id:number):Promise<Doku>{
+        return new Promise<Doku>((resolve)=>{
+            const qry="SELECT * FROM dokus WHERE \"index\" = \""+id.toString()+"\";";
+            console.log(qry);
+            this.dokulist.get<iDoku>(qry).then((result)=>{
+                console.log(result);
+                resolve(Doku.fromInterface(result));
+            }).catch((err) => {
+                console.log(err);
+            });
+        });
+    }
+
     public init(dir: PathLike): void {
+        this.path=dir;
         open<sqlite3.Database, sqlite3.Statement>({
             filename: ":memory:",
             driver: sqlite3.Database
@@ -103,7 +120,7 @@ export class Dokus {
 
 
     private pushDoku(dir: PathLike, file: string, Filestat: fs.Stats) {
-        const doku: Doku = new Doku(file, dir.toString(), new Date(Filestat.birthtime));
+        const doku: Doku = new Doku(file, dir.toString().replace("N:\\","").replace(file,""), new Date(Filestat.birthtime));
         this.dokuCount++;
         if (fs.existsSync(Path.join(dir.toString(), doku.title + ".json"))) {
             //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
