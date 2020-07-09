@@ -14,7 +14,7 @@
         <tr>
             <td scope="row"><%=index+page*limit+1%></td>
             <th>
-                <%=doku.title %>
+                <a href='javascript:goToPage("/doku/id<%= doku.index %>")'><%=doku.title %></a>
             </th>
             <td>
                 <%=doku.path %>
@@ -27,12 +27,12 @@
     </tbody>
 </table>
 <div><% if (page>0) { %>
-    <a onclick='goToPage("/dokus/page<%=page %>")'>zurück</a>
+    <a href='javascript:goToPage("/dokus/page<%=page %>")'>zurück</a>
     <% } %>
     <select class="browser-default custom-select" onchange='goToPage("/dokus/page"+this.value)'>
         <% for( let index = 0; index < count/limit; index++ ) { %>
         <option value="<%=index+1 %>" <% if (index==page) { %> selected <% } %>>Seite <%=index+1 %> </option>
         <% } %>
     </select>
-    <a onclick='goToPage("/dokus/page<%=page+2 %>")'>vor</a>
+    <a href='javascript:goToPage("/dokus/page<%=page+2 %>")'>vor</a>
 </div>

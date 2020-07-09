@@ -15,13 +15,13 @@ import dotenv from "dotenv";
  * @class Dokus
  */
 export class Dokus {
-    
+
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
-    private dokuCount:number;
-    private path:PathLike;
+    private dokuCount: number;
+    private path: PathLike;
     constructor() {
         dotenv.config();
-        this.dokuCount=0;
+        this.dokuCount = 0;
         sqlite3.verbose();
     }
 
@@ -32,19 +32,19 @@ export class Dokus {
      * @returns {Promise<Doku[]>}
      * @memberof Dokus
      */
-    public async getDokus(count:number=25,page:number=0,order:string="date",desc:boolean=true): Promise<DokuResponse> {
+    public async getDokus(count: number = 25, page: number = 0, order: string = "date", desc: boolean = true): Promise<DokuResponse> {
         const promise = new Promise<DokuResponse>((resolve) => {
-            const tempDokus: DokuResponse =new DokuResponse();
-            tempDokus.limit=count;
-            tempDokus.page=page;
-            tempDokus.count=this.dokuCount;
-            let qry= "SELECT * FROM dokus ORDER BY \""+order+"\"";
-            if (desc){
-                qry+=" DESC";
-            }else{
-                qry+=" ASC";
+            const tempDokus: DokuResponse = new DokuResponse();
+            tempDokus.limit = count;
+            tempDokus.page = page;
+            tempDokus.count = this.dokuCount;
+            let qry = "SELECT * FROM dokus ORDER BY \"" + order + "\"";
+            if (desc) {
+                qry += " DESC";
+            } else {
+                qry += " ASC";
             }
-            qry+=" LIMIT "+count.toString()+" OFFSET "+(page*count).toString();
+            qry += " LIMIT " + count.toString() + " OFFSET " + (page * count).toString();
             this.dokulist.all<iDoku[]>(qry).then((result) => {
                 result.forEach((row) => {
                     tempDokus.dokus.push(Doku.fromInterface(row));
@@ -58,13 +58,11 @@ export class Dokus {
 
         return promise;
     }
-    
-    public async getDoku(id:number):Promise<Doku>{
-        return new Promise<Doku>((resolve)=>{
-            const qry="SELECT * FROM dokus WHERE \"index\" = \""+id.toString()+"\";";
-            console.log(qry);
-            this.dokulist.get<iDoku>(qry).then((result)=>{
-                console.log(result);
+
+    public async getDoku(id: number): Promise<Doku> {
+        return new Promise<Doku>((resolve) => {
+            const qry = "SELECT * FROM dokus WHERE \"index\" = \"" + id.toString() + "\";";
+            this.dokulist.get<iDoku>(qry).then((result) => {
                 resolve(Doku.fromInterface(result));
             }).catch((err) => {
                 console.log(err);
@@ -73,7 +71,7 @@ export class Dokus {
     }
 
     public init(dir: PathLike): void {
-        this.path=dir;
+        this.path = dir;
         open<sqlite3.Database, sqlite3.Statement>({
             filename: ":memory:",
             driver: sqlite3.Database
@@ -109,18 +107,16 @@ export class Dokus {
                             if (Filestat.isDirectory()) {
                                 this.allFilesSync(filePath);
                             } else {
-                                if (/[(.mp4)(.mkv)]$/i.test(file)) {this.pushDoku(filePath, file, Filestat);}
+                                if (/[(.mp4)(.mkv)]$/i.test(file)) { this.pushDoku(filePath, file, Filestat); }
                             }
                         }
-                    ).catch((err)=>console.log(err));
+                    ).catch((err) => console.log(err));
                 });
             }
-        ).catch((err)=>console.log(err));
+        ).catch((err) => console.log(err));
     }
-
-
     private pushDoku(dir: PathLike, file: string, Filestat: fs.Stats) {
-        const doku: Doku = new Doku(file, dir.toString().replace("N:\\","").replace(file,""), new Date(Filestat.birthtime));
+        const doku: Doku = new Doku(file, dir.toString().replace("N:\\", "").replace(file, ""), new Date(Filestat.birthtime));
         this.dokuCount++;
         if (fs.existsSync(Path.join(dir.toString(), doku.title + ".json"))) {
             //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));

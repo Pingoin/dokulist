@@ -13,7 +13,7 @@ export class Doku{
         this.filename=filename;
         this.title=filename.replace(".mkv","").replace(".mp4","");
         this.extension=filename.replace(this.title,"");
-        this.path=path;
+        this.path=path.replace("\\","/");
         this.date=date;
     }
 

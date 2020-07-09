@@ -24,26 +24,39 @@ class RestApi {
     private routes(): void {
         this.express.get("/files", (req, res) => {
             let page = 0;
-            this.docuDB.getDoku(5);
             if (req.query.page) {
                 page = parseInt(req.query.page.toString()) - 1;
             }
             this.docuDB.getDokus(25, page).then((resolve => {
-                fileSystem.readFile(path.normalize(__dirname + "/../com/views/partials/dokuTable.ejs"))
-                    .then((html) => {
-                        resolve.template = html.toString();
-                        res.json(resolve);
-                    }).catch((reject) => {
-                        console.log(reject);
-                        res.send("Template nicht vorhanden: " + req.query.template);
-                    });
+                res.json(resolve);
             }));
+        });
+        this.express.get("/templates",(req,res)=>{
+            let template;
+            if(req.query.template){
+                template=req.query.template;
+            }else{
+                template="dokuTable";
+            }
+            fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/"+template+".ejs"))
+                .then((html)=>{
+                    res.send(html);
+                }).catch((reject)=>{
+                    console.log(reject);
+                    res.send("Template nicht vorhanden: "+req.query.template);
+                });
         });
         this.express.get("/doku",(req,res)=>{
             let ID:number;
             if (req.query.ID) {
-                ID = parseInt(req.query.page.toString()) - 1;
+                ID = parseInt(req.query.ID.toString());
+            }else{
+                ID=0;
             }
+
+            this.docuDB.getDoku(ID).then((resolve)=>{
+                res.json(resolve);
+            });
         });
     }
 }
