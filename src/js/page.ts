@@ -1,19 +1,18 @@
 declare let axios: typeof import("axios").default;
 declare let ejs: typeof import("ejs");
 
-window.addEventListener("popstate", (event) => {
-    parseURL();
-});
+window.addEventListener("popstate",parseURL);
+window.addEventListener("load", parseURL);
 
 function goToPage(page: string) {// eslint-disable-line
     history.pushState({}, "title 1", page);
-    parseURL();
+        parseURL( );
 }
 
 function fillDokuTable(page: number) {
     axios.get("/api/templates", {
         params: {
-            template: "dokuTable"
+            template: "videoTable"
         }
     }).then(templateReq => (
         axios.get("/api/files", {
@@ -36,7 +35,7 @@ function fillDokuTable(page: number) {
 function fillDokuPage(ID: number) {
     axios.get("/api/templates", {
         params: {
-            template: "singleDoku"
+            template: "singleVideo"
         }
     }).then(templateReq => (
         axios.get("/api/Doku", {
@@ -51,6 +50,7 @@ function fillDokuPage(ID: number) {
 
 function parseURL() {
     const url = window.location.href.split("/");
+    console.log(url);
     if (url.length > 2) {
         switch (url[3]) {
             case "dokus":
@@ -58,6 +58,7 @@ function parseURL() {
                 break;
             case "doku":
                 fillDokuPage(parseInt(url[4].replace("id", "")));
+                break;
             default:
                 fillDokuTable(1);
         }
@@ -66,4 +67,4 @@ function parseURL() {
     }
 }
 
-parseURL();
+//parseURL();

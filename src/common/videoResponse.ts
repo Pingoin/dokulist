@@ -1,6 +1,6 @@
-import { Doku} from "./doku";
-export class DokuResponse{
-public dokus:Doku[]=[];
+import { Video} from "./video";
+export class VideoResponse{
+public dokus:Video[]=[];
 public count:number;
 public page:number;
 public limit:number;

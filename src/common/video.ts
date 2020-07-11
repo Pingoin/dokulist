@@ -1,4 +1,4 @@
-export class Doku{
+export class Video{
     public index=0;
     public filename: string;
     public path: string;
@@ -17,14 +17,14 @@ export class Doku{
         this.date=date;
     }
 
-    static fromJSON(json: string): Doku{
+    static fromJSON(json: string): Video{
         const tmp=JSON.parse(json);
-        const tmpDoku: Doku=new Doku(tmp.filename,tmp.path,new Date(tmp.date));
+        const tmpDoku: Video=new Video(tmp.filename,tmp.path,new Date(tmp.date));
 
         return tmpDoku;
     }
-    static fromInterface(idoc:iDoku):Doku{
-        const tmpDoku=new Doku(idoc.title+idoc.extension,idoc.path,new Date(idoc.date));
+    static fromInterface(idoc:iVideo):Video{
+        const tmpDoku=new Video(idoc.title+idoc.extension,idoc.path,new Date(idoc.date));
 
         tmpDoku.index=idoc.index;
         tmpDoku.description=idoc.description;
@@ -34,7 +34,7 @@ export class Doku{
         return tmpDoku;
     }
 }
-export interface iDoku{
+export interface iVideo{
     index:number,
     path: string,
     date: number,

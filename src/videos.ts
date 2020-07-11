@@ -1,10 +1,10 @@
-import { Doku, iDoku } from "./common/doku";
+import { Video, iVideo } from "./common/video";
 import fs, { promises as fileSystem, PathLike } from "fs";
 import Path from "path";
 import sqlite3 from "sqlite3";
 import { open } from "sqlite";
 import { Database } from "sqlite";
-import { DokuResponse } from "./common/dokuResponse";
+import { VideoResponse } from "./common/videoResponse";
 import dotenv from "dotenv";
 
 
@@ -14,7 +14,7 @@ import dotenv from "dotenv";
  * @export
  * @class Dokus
  */
-export class Dokus {
+export class Videos {
 
     private dokulist: Database<sqlite3.Database, sqlite3.Statement>;
     private dokuCount: number;
@@ -29,12 +29,12 @@ export class Dokus {
     /**
      *
      *
-     * @returns {Promise<Doku[]>}
+     * @returns {Promise<Video[]>}
      * @memberof Dokus
      */
-    public async getDokus(count: number = 25, page: number = 0, order: string = "date", desc: boolean = true): Promise<DokuResponse> {
-        const promise = new Promise<DokuResponse>((resolve) => {
-            const tempDokus: DokuResponse = new DokuResponse();
+    public async getDokus(count: number = 25, page: number = 0, order: string = "date", desc: boolean = true): Promise<VideoResponse> {
+        const promise = new Promise<VideoResponse>((resolve) => {
+            const tempDokus: VideoResponse = new VideoResponse();
             tempDokus.limit = count;
             tempDokus.page = page;
             tempDokus.count = this.dokuCount;
@@ -45,9 +45,9 @@ export class Dokus {
                 qry += " ASC";
             }
             qry += " LIMIT " + count.toString() + " OFFSET " + (page * count).toString();
-            this.dokulist.all<iDoku[]>(qry).then((result) => {
+            this.dokulist.all<iVideo[]>(qry).then((result) => {
                 result.forEach((row) => {
-                    tempDokus.dokus.push(Doku.fromInterface(row));
+                    tempDokus.dokus.push(Video.fromInterface(row));
                 });
                 resolve(tempDokus);
             }).catch((err) => {
@@ -59,11 +59,11 @@ export class Dokus {
         return promise;
     }
 
-    public async getDoku(id: number): Promise<Doku> {
-        return new Promise<Doku>((resolve) => {
+    public async getDoku(id: number): Promise<Video> {
+        return new Promise<Video>((resolve) => {
             const qry = "SELECT * FROM dokus WHERE \"index\" = \"" + id.toString() + "\";";
-            this.dokulist.get<iDoku>(qry).then((result) => {
-                resolve(Doku.fromInterface(result));
+            this.dokulist.get<iVideo>(qry).then((result) => {
+                resolve(Video.fromInterface(result));
             }).catch((err) => {
                 console.log(err);
             });
@@ -99,7 +99,7 @@ export class Dokus {
     }
     public allFilesSync(dir: PathLike): void {
         fileSystem.readdir(dir).then(
-            (files) => {
+            (files) => { 
                 files.forEach(file => {
                     const filePath = Path.join(dir.toString(), file);
                     fileSystem.stat(filePath).then(
@@ -116,7 +116,7 @@ export class Dokus {
         ).catch((err) => console.log(err));
     }
     private pushDoku(dir: PathLike, file: string, Filestat: fs.Stats) {
-        const doku: Doku = new Doku(file, dir.toString().replace("N:\\", "").replace(file, ""), new Date(Filestat.birthtime));
+        const doku: Video = new Video(file, dir.toString().replace("N:\\", "").replace(file, ""), new Date(Filestat.birthtime));
         this.dokuCount++;
         if (fs.existsSync(Path.join(dir.toString(), doku.title + ".json"))) {
             //tmpDoku = Doku.fromJSON(require(Path.join(dir.toString(), tmpDoku.title + ".json")));
@@ -154,4 +154,4 @@ export class Dokus {
 
 }
 
-export default new Dokus();
+export default new Videos();

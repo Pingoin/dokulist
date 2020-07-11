@@ -1,19 +1,19 @@
 import express from "express";
 import bodyParser from "body-parser";
-import { Dokus } from "./docus";
+import { Videos } from "./videos";
 import { promises as fileSystem } from "fs";
 import dotenv from "dotenv";
 import path from "path";
 
 class RestApi {
     public express: express.Application;
-    private docuDB: Dokus;
+    private docuDB: Videos;
     constructor() {
         dotenv.config();
         this.express = express();
         this.middleware();
         this.routes();
-        this.docuDB = new Dokus();
+        this.docuDB = new Videos();
         const dokuPath:string=process.env.DOKU_ROOT;
         this.docuDB.init(dokuPath);
     }
@@ -36,7 +36,7 @@ class RestApi {
             if(req.query.template){
                 template=req.query.template;
             }else{
-                template="dokuTable";
+                template="videoTable";
             }
             fileSystem.readFile(path.normalize(__dirname+"/../com/views/partials/"+template+".ejs"))
                 .then((html)=>{
